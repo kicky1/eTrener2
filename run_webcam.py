@@ -68,7 +68,7 @@ def lungesStart(a, b, c, d):
     a oraz b to katy miedzy udem a lydka
     c oraz d to katy miedzy tulowiem a szyja
     """
-    if (a in range(74, 190) or b in range(74, 190)) and (c in range(110, 140) or d in range(110, 140)):
+    if (a in range(74, 195) or b in range(74, 195)) and (c in range(110, 150) or d in range(110, 150)):
         return True
     return False
 
@@ -118,8 +118,8 @@ def plank(a, b, c, d, e, f, g, h):
         e and f are angle of body and legs.
         g and h are angle of head and body
     """
-    if (a in range(70, 195) or b in range(60, 195)) and (c in range(125, 175) or d in range(125, 175)) and \
-            (e in range(118, 190) or f in range(118, 190) and (g in range(130, 190) or h in range(130, 190))):
+    if (a in range(80, 185) or b in range(80, 185)) and (c in range(125, 180) or d in range(125, 180)) and \
+            (e in range(115, 185) or f in range(115, 185) and (g in range(130, 190) or h in range(130, 190))):
         return True
     return False
 
@@ -161,7 +161,7 @@ def drawStr(dst, xxx_todo_changeme, s, color, scale):
 class Program:
     parser = argparse.ArgumentParser(description='tf-pose-estimation realtime webcam')
     parser.add_argument('--camera', type=str, default=0)
-    parser.add_argument('--resize', type=str, default='384x368')
+    parser.add_argument('--resize', type=str, default='400x368')
     parser.add_argument('--resize-out-ratio', type=float, default=4.0)
     parser.add_argument('--model', type=str, default='cmu')
     parser.add_argument('--show-process', type=bool, default=False)
@@ -196,7 +196,6 @@ class Program:
         pose = humans
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
         height, width = image.shape[0], image.shape[1]
-        print("--- %s seconds ---" % (time.time() - start_time))
         if mode == 1:
             hu = len(humans)
             cv2.putText(image, str(hu), (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
@@ -228,10 +227,10 @@ class Program:
                 wrist_noseR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 0)))
                 wrist_noseL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 0)))
 
-                if angle1 < 72 or angle2 < 72:
+                if angle1 < 70:
                     cv2.putText(image, "Zachowaj kat prosty w kolanie!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                 color=(0, 0, 255))
-                if angle3 < 98 or angle4 > 148:
+                if angle3 < 150 or angle4 > 150:
                     cv2.putText(image, "Patrz przed siebie!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                 color=(0, 0, 255))
                 if wrist_hipR > wrist_noseR:
@@ -291,6 +290,10 @@ class Program:
             angle6 = cosAngle(findPoint(pose, 1), findPoint(pose, 11), findPoint(pose, 12))
             angle7 = cosAngle(findPoint(pose, 0), findPoint(pose, 1), findPoint(pose, 8))
             angle8 = cosAngle(findPoint(pose, 0), findPoint(pose, 1), findPoint(pose, 11))
+
+            print('kat 7 : ' + str(angle7))
+            print('kat 8 : ' + str(angle8))
+
 
             if angle1 < 70:
                 cv2.putText(image, "Trzymaj kat prosty w lokciach!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
