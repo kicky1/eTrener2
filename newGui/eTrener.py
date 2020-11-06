@@ -14,11 +14,11 @@ import cv2
 import sys
 import math
 import time
+
 global height, width, out
 start_time = time.time()
-x =1
+x = 1
 counter = 0
-
 
 logger = logging.getLogger('eTrener')
 logger.setLevel(logging.DEBUG)
@@ -40,10 +40,10 @@ w, h = model_wh(args.resize)
 e = TfPoseEstimator(get_graph_path(args.model), target_size=(w, h))
 
 
-def findPoint(pose, p):
-    for point in pose:
+def findPoint(pose, point):
+    for points in pose:
         try:
-            bodyPart = point.body_parts[p]
+            bodyPart = points.body_parts[point]
             return int(bodyPart.x * width + 0.5), int(bodyPart.y * height + 0.5)
         except:
             return 0, 0
@@ -82,111 +82,96 @@ def cosAngle(point1, point2, point3):
     return int(angle)
 
 
-def lungesStart(a, b, c, d):
+def lungesStart(kneeAngleR, kneeAngleL, neckAngleR, neckAngleL):
     """
-    a oraz b to katy miedzy udem a lydka
-    c oraz d to katy miedzy tulowiem a szyja
+    kneeAngleR oraz kneeAngleL to katy tworzone przez kosc udowa i piszczelowa
+    neckAngleR oraz neckAngleL to katy miedzy szyja a tulowiem
     """
-    if (a in range(74, 190) or b in range(74, 190)) and (c in range(110, 140) or d in range(110, 140)):
+    if (kneeAngleR in range(74, 180) or kneeAngleL in range(74, 180)) and (
+            neckAngleR in range(110, 150) or neckAngleL in range(110, 150)):
         return True
     return False
 
 
-def lungesDone(a, b):
-    """
-    a oraz b to katy miedzy udem a lydka
-    """
-    if a in range(74, 100) or b in range(74, 100):
+def lungesDone(kneeAngleR, kneeAngleL):
+    if kneeAngleR in range(74, 100) or kneeAngleL in range(74, 100):
         return True
     return False
 
 
-def lungesDoneScore(a, b):
-    """
-    a oraz b to katy miedzy udem a lydka
-    """
-    if a in range(74, 90) or b in range(74, 90):
+def lungesDoneScore(kneeAngleR, kneeAngleL):
+    if kneeAngleR in range(74, 90) or kneeAngleL in range(74, 90):
         return True
     return False
 
 
-def pushUps(a, b, c, d, e, f, g, h):
+def pushUps(ankleAngleR, ankleAngleL, kneeAngleR, kneeAngleL, hipAngleR, hipAngleL, neckAngleR, neckAngleL):
     """
-        a oraz b to katy miedzy ramieniem a przedramieniem
-        c oraz d to katy miedzy lydka a udem
-        e oraz f to katy miedzy nogami a tulowiem
-        g oraz h to katy miedzy tulowiem a szyja
+        ankleAngleR oraz ankleAngleL to katy miedzy ramieniem a przedramieniem
+        kneeAngleR oraz kneeAngleL to katy tworzone przez kosc udowa i piszczelowa
+        hipAngleR oraz hipAngleL to katy miedzy tulowiem a nogami
+        neckAngleR oraz neckAngleL to katy miedzy szyja a tulowiem
     """
-    if (a in range(75, 200) or b in range(75, 200)) and (c in range(135, 175) or d in range(135, 175)) and \
-            (e in range(150, 190) or f in range(150, 190) and (g in range(130, 190) or h in range(130, 190))):
+    if (ankleAngleR in range(75, 180) or ankleAngleL in range(75, 180)) and (
+            kneeAngleR in range(135, 175) or kneeAngleL in range(135, 175)) and \
+            (hipAngleR in range(150, 180) or hipAngleL in range(150, 180) and (
+                    neckAngleR in range(130, 180) or neckAngleL in range(130, 180))):
         return True
     return False
 
 
-def pushUpsDone(a, b):
-    """
-    a oraz b to katy miedzy ramieniem a przedramieniem
-    """
-    if a in range(75, 110) or b in range(75, 110):
+def pushUpsDone(ankleAngleR, ankleAngleL):
+    if ankleAngleR in range(75, 110) or ankleAngleL in range(75, 110):
         return True
     return False
 
 
-def pushUpsDoneScore(a, b):
-    """
-    a oraz b to katy miedzy ramieniem a przedramieniem
-    """
-    if a in range(75, 90) or b in range(75, 90):
+def pushUpsDoneScore(ankleAngleR, ankleAngleL):
+    if ankleAngleR in range(75, 90) or ankleAngleL in range(75, 90):
         return True
     return False
 
 
-def plank(a, b, c, d, e, f, g, h):
+def plank(ankleAngleR, ankleAngleL, kneeAngleR, kneeAngleL, hipAngleR, hipAngleL, neckAngleR, neckAngleL):
     """
-        a oraz b to katy miedzy ramieniem a przedramieniem
-        c oraz d to katy miedzy lydka a udem
-        e oraz f to katy miedzy nogami a tulowiem
-        g oraz h to katy miedzy tulowiem a szyja
+        ankleAngleR oraz ankleAngleL to katy miedzy ramieniem a przedramieniem
+        kneeAngleR oraz kneeAngleL to katy tworzone przez kosc udowa i piszczelowa
+        hipAngleR oraz hipAngleL to katy miedzy tulowiem a nogami
+        neckAngleR oraz neckAngleL to katy miedzy szyja a tulowiem
     """
-    if (a in range(70, 195) or b in range(60, 195)) and (c in range(125, 175) or d in range(125, 175)) and \
-            (e in range(118, 190) or f in range(118, 190) and (g in range(130, 190) or h in range(130, 190))):
+    if (ankleAngleR in range(80, 180) or ankleAngleL in range(80, 180)) and (
+            kneeAngleR in range(125, 180) or kneeAngleL in range(125, 180)) and \
+            (hipAngleR in range(115, 180) or hipAngleL in range(115, 180) and (
+                    neckAngleR in range(130, 180) or neckAngleL in range(130, 180))):
         return True
     return False
 
 
-def plankDone(a, b):
-    """
-    a oraz b to katy miedzy ramieniem a przedramieniem
-    """
-    if a in range(70, 100) or b in range(60, 100):
+def plankDone(ankleAngleR, ankleAngleL):
+    if ankleAngleR in range(70, 100) or ankleAngleL in range(70, 100):
         return True
     return False
 
 
-def squats(a, b, c, d):
+def squats(kneeAngleR, kneeAngleL, neckAngleR, neckAngleL):
     """
-    a oraz b to katy miedzy lydka a udem
-    c oraz d to katy miedzy tulowiem a szyja
+    kneeAngleR oraz kneeAngleL to katy miedzy lydka a udem
+    neckAngleR oraz neckAngleL to katy miedzy tulowiem a szyja
     """
-    if (a in range(75, 195) or b in range(75, 195)) and (c in range(120, 190) or d in range(120, 190)):
+    if (kneeAngleR in range(70, 180) or kneeAngleL in range(70, 180)) and (
+            neckAngleR in range(120, 180) or neckAngleL in range(120, 180)):
         return True
     return False
 
 
-def squatsDone(a, b):
-    """
-    a oraz b to katy miedzy lydka a udem
-    """
-    if a in range(75, 100) or b in range(75, 100):
+def squatsDone(kneeAngleR, kneeAngleL):
+    if kneeAngleR in range(70, 120) or kneeAngleR in range(70, 120):
         return True
     return False
 
 
-def squatDoneScore(a, b):
-    """
-    a oraz b to katy miedzy lydka a udem
-    """
-    if a in range(75, 90) or b in range(75, 90):
+def squatDoneScore(kneeAngleR, kneeAngleL):
+    if kneeAngleR in range(70, 90) or kneeAngleL in range(70, 90):
         return True
     return False
 
@@ -216,32 +201,32 @@ class Lunges(QThread):
                 step1 = channel1 * width1
                 if len(pose) > 0:
                     # katy
-                    angle1 = cosAngle(findPoint(pose, 10), findPoint(pose, 9), findPoint(pose, 8))
-                    angle2 = cosAngle(findPoint(pose, 13), findPoint(pose, 12), findPoint(pose, 11))
-                    angle3 = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
-                    angle4 = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
+                    angleKneeR = cosAngle(findPoint(pose, 10), findPoint(pose, 9), findPoint(pose, 8))
+                    angleKneeL = cosAngle(findPoint(pose, 13), findPoint(pose, 12), findPoint(pose, 11))
+                    angleNeckR = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
+                    angleNeckL = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
                     # dystans
                     wrist_hipR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 8)))
                     wrist_hipL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 11)))
                     wrist_noseR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 0)))
                     wrist_noseL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 0)))
 
-                    if angle1 < 72 or angle2 < 72:
+                    if angleKneeR < 70:
                         cv2.putText(image1, "Zachowaj kat prosty w kolanie!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
-                    if angle3 < 98 or angle4 > 148:
+                    if angleNeckR < 110 or angleNeckL > 150:
                         cv2.putText(image1, "Patrz przed siebie!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
                     if wrist_hipR > wrist_noseR:
                         cv2.putText(image1, "Trzymaj ręce przy ciele!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
 
-                    if lungesStart(angle1, angle2, angle3, angle4) and (
+                    if lungesStart(angleKneeR, angleKneeL, angleNeckR, angleNeckL) and (
                             wrist_hipL < wrist_noseL or wrist_hipR < wrist_noseR):
                         image1 = TfPoseEstimator.draw_humans2(image1, humans, imgcopy=False)
-                        if lungesDone(angle1, angle2):
+                        if lungesDone(angleKneeR, angleKneeL):
                             image1 = TfPoseEstimator.draw_humans3(image1, humans, imgcopy=False)
-                            if lungesDoneScore(angle1, angle2):
+                            if lungesDoneScore(angleKneeR, angleKneeL):
                                 image1 = TfPoseEstimator.draw_humans4(image1, humans, imgcopy=False)
                                 cv2.putText(image1, "Powrot do gory!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
                                             color=(255, 255, 255))
@@ -285,29 +270,30 @@ class PushUps(QThread):
                 step1 = channel1 * width1
                 if len(pose) > 0:
                     # katy
-                    angle1 = cosAngle(findPoint(pose, 4), findPoint(pose, 3), findPoint(pose, 2))
-                    angle2 = cosAngle(findPoint(pose, 7), findPoint(pose, 6), findPoint(pose, 5))
-                    angle3 = cosAngle(findPoint(pose, 8), findPoint(pose, 9), findPoint(pose, 10))
-                    angle4 = cosAngle(findPoint(pose, 11), findPoint(pose, 12), findPoint(pose, 13))
-                    angle5 = cosAngle(findPoint(pose, 1), findPoint(pose, 8), findPoint(pose, 9))
-                    angle6 = cosAngle(findPoint(pose, 1), findPoint(pose, 11), findPoint(pose, 12))
-                    angle7 = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
-                    angle8 = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
+                    angleAnkleR = cosAngle(findPoint(pose, 4), findPoint(pose, 3), findPoint(pose, 2))
+                    angleAnkleL = cosAngle(findPoint(pose, 7), findPoint(pose, 6), findPoint(pose, 5))
+                    angleKneeR = cosAngle(findPoint(pose, 8), findPoint(pose, 9), findPoint(pose, 10))
+                    angleKneeL = cosAngle(findPoint(pose, 11), findPoint(pose, 12), findPoint(pose, 13))
+                    angleHipR = cosAngle(findPoint(pose, 1), findPoint(pose, 8), findPoint(pose, 9))
+                    angleHipL = cosAngle(findPoint(pose, 1), findPoint(pose, 11), findPoint(pose, 12))
+                    angleNeckR = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
+                    angleNeckL = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
 
-                    if angle3 < 133:
+                    if angleKneeR < 135:
                         cv2.putText(image1, "Nie zginaj kolan!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
-                    if angle5 < 148:
+                    if angleHipR < 150:
                         cv2.putText(image1, "Tylek nizej!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75, color=(0, 0, 255))
-                    if angle7 < 128:
+                    if angleNeckR < 130:
                         cv2.putText(image1, "Patrz przed siebie!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
 
-                    if pushUps(angle1, angle2, angle3, angle4, angle5, angle6, angle7, angle8):
+                    if pushUps(angleAnkleR, angleAnkleL, angleKneeR, angleKneeL, angleHipR, angleHipL, angleNeckR,
+                               angleNeckL):
                         image1 = TfPoseEstimator.draw_humans2(image1, pose, imgcopy=False)
-                        if pushUpsDone(angle1, angle2):
+                        if pushUpsDone(angleAnkleR, angleAnkleL):
                             image1 = TfPoseEstimator.draw_humans3(image1, pose, imgcopy=False)
-                            if pushUpsDoneScore(angle1, angle2):
+                            if pushUpsDoneScore(angleAnkleR, angleAnkleL):
                                 image1 = TfPoseEstimator.draw_humans4(image1, pose, imgcopy=False)
                                 cv2.putText(image1, "Powrot do gory!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
                                             color=(255, 255, 255))
@@ -343,39 +329,39 @@ class Plank(QThread):
                 height1, width1, channel1 = image.shape
                 step1 = channel1 * width1
                 if len(pose) > 0:
-                    # katy
-                    angle1 = cosAngle(findPoint(pose, 10), findPoint(pose, 9), findPoint(pose, 8))
-                    angle2 = cosAngle(findPoint(pose, 13), findPoint(pose, 12), findPoint(pose, 11))
-                    angle3 = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
-                    angle4 = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
-                    # dystanse
-                    wrist_hipR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 8)))
-                    wrist_hipL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 11)))
-                    wrist_noseR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 0)))
-                    wrist_noseL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 0)))
+                    # distance calculations
+                    foot_distance = int(euclidianDistance(findPoint(pose, 10), findPoint(pose, 13)))
+                    ankle_distance = int(euclidianDistance(findPoint(pose, 3), findPoint(pose, 6)))
+                    # angle calcucations
+                    angleAnkleR = cosAngle(findPoint(pose, 7), findPoint(pose, 6), findPoint(pose, 5))
+                    angleAnkleL = cosAngle(findPoint(pose, 4), findPoint(pose, 3), findPoint(pose, 2))
+                    angleKneeR = cosAngle(findPoint(pose, 8), findPoint(pose, 9), findPoint(pose, 10))
+                    angleKneeL = cosAngle(findPoint(pose, 11), findPoint(pose, 12), findPoint(pose, 13))
+                    angleHipR = cosAngle(findPoint(pose, 1), findPoint(pose, 8), findPoint(pose, 9))
+                    angleHipL = cosAngle(findPoint(pose, 1), findPoint(pose, 11), findPoint(pose, 12))
+                    angleNeckR = cosAngle(findPoint(pose, 0), findPoint(pose, 1), findPoint(pose, 8))
+                    angleNeckL = cosAngle(findPoint(pose, 0), findPoint(pose, 1), findPoint(pose, 11))
 
-                    if angle1 < 78 or angle2 < 78:
-                        cv2.putText(image1, "Zachowaj kat prosty w kolanie!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                    if angleAnkleR < 80:
+                        cv2.putText(image1, "Trzymaj kat prosty w lokciach!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
-                    if angle3 < 98 or angle4 > 148:
-                        cv2.putText(image1, "Patrz przed siebie!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                    if angleKneeR < 125:
+                        cv2.putText(image1, "Nie zginaj kolan!", (20, 60), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
-                    if wrist_hipR > wrist_noseR:
-                        cv2.putText(image1, "TNie podnos rak za wysoko!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
-                                    color=(0, 0, 255))
-                    if wrist_hipR < wrist_hipL:
-                        cv2.putText(image1, "Nie podnos rak za wysoko!", (20, 110), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                    if angleHipR < 115:
+                        cv2.putText(image1, "Tylek nizej!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75, color=(0, 0, 255))
+                    if angleNeckR < 130:
+                        cv2.putText(image1, "Patrz przed siebie!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
 
-                    if lungesStart(angle1, angle2, angle3, angle4) and (
-                            wrist_hipL < wrist_noseL or wrist_hipR < wrist_noseR):
+                    if plank(angleAnkleR, angleAnkleL, angleKneeR, angleKneeL, angleHipR, angleHipL, angleNeckR,
+                             angleNeckL) and foot_distance < ankle_distance:
                         image1 = TfPoseEstimator.draw_humans2(image1, pose, imgcopy=False)
-                        if lungesDone(angle1, angle2):
+                        if plankDone(angleAnkleR, angleAnkleL):
                             image1 = TfPoseEstimator.draw_humans3(image1, pose, imgcopy=False)
-                            if lungesDoneScore(angle1, angle2):
-                                image1 = TfPoseEstimator.draw_humans4(image1, pose, imgcopy=False)
-                                cv2.putText(image1, "Powrot do gory!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
-                                            color=(255, 255, 255))
+                            cv2.putText(image1, "Tak trzymaj!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 1,
+                                        color=(255, 255, 255))
+
                 qImg3 = QImage(image1.data, width1, height1, step1, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg3)
                 self.out.write(image1)
@@ -411,33 +397,39 @@ class Squats(QThread):
                     # dystans
                     foot_distance = int(euclidianDistance(findPoint(pose, 10), findPoint(pose, 13)))
                     knee_distance = int(euclidianDistance(findPoint(pose, 9), findPoint(pose, 12)))
-                    ankles_distance = int(euclidianDistance(findPoint(pose, 2), findPoint(pose, 5)))
+                    shoulders_distance = int(euclidianDistance(findPoint(pose, 2), findPoint(pose, 5)))
                     # katy
-                    angle1 = cosAngle(findPoint(pose, 11), findPoint(pose, 12), findPoint(pose, 13))
-                    angle2 = cosAngle(findPoint(pose, 8), findPoint(pose, 9), findPoint(pose, 10))
-                    angle3 = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
-                    angle4 = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
+                    angleKneeR = cosAngle(findPoint(pose, 11), findPoint(pose, 12), findPoint(pose, 13))
+                    angleKneeL = cosAngle(findPoint(pose, 8), findPoint(pose, 9), findPoint(pose, 10))
+                    angleNeckR = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
+                    angleNeckL = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
 
-                    if angle3 < 120:
+                    if angleNeckR < 120:
                         cv2.putText(image1, "Glowa przed siebie!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
-                    if foot_distance < 0.60 * ankles_distance:
-                        cv2.putText(image1, "Rozszerz stopy!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                    if shoulders_distance <= 0.55 * foot_distance:
+                        cv2.putText(image, "Stopy za szeroko!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
-                    if foot_distance > 1.55 * ankles_distance:
-                        cv2.putText(image1, "Stopy za szeroko!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                    if shoulders_distance >= 1.3 * foot_distance:
+                        cv2.putText(image, "Rozszerz stopy!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                                    color=(0, 0, 255))
+                    if knee_distance <= 0.7 * foot_distance:
+                        cv2.putText(image, "Kolana zbyt wasko!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                                    color=(0, 0, 255))
+                    if knee_distance >= 1.35 * foot_distance:
+                        cv2.putText(image, "Kolana za szeroko!", (20, 100), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
 
-                    if squats(angle1, angle2, angle3, angle4) and (
-                            foot_distance >= 0.4 * knee_distance) and (
-                            foot_distance <= 1.6 * knee_distance) \
-                            and (foot_distance >= 0.4 * ankles_distance) and (
-                            foot_distance <= 1.95 * ankles_distance):
+                    if squats(angleKneeR, angleKneeL, angleNeckR, angleNeckL) and (
+                            knee_distance >= 0.7 * foot_distance) and (
+                            foot_distance <= 1.35 * knee_distance) \
+                            and (shoulders_distance >= 0.55 * foot_distance) and (
+                            shoulders_distance <= 1.3 * foot_distance):
 
                         image1 = TfPoseEstimator.draw_humans2(image1, humans, imgcopy=False)
-                        if squatsDone(angle1, angle2):
+                        if squatsDone(angleKneeR, angleKneeL):
                             image1 = TfPoseEstimator.draw_humans3(image1, humans, imgcopy=False)
-                            if squatDoneScore(angle1, angle2):
+                            if squatDoneScore(angleKneeR, angleKneeL):
                                 image1 = TfPoseEstimator.draw_humans4(image1, humans, imgcopy=False)
                                 cv2.putText(image1, "Powrot do gory!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
                                             color=(255, 255, 255))
@@ -493,10 +485,6 @@ class MainWindow(QWidget):
         filename, _ = QFileDialog.getOpenFileName(self, directory="Wideo/")
         if filename != '':
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(filename)))
-
-    def close(self):
-        if os.path.exists("output.avi"):
-            os.remove('output.avi')
 
     def startVideo(self):
 
