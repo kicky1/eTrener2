@@ -1,3 +1,4 @@
+import imutils
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 from PyQt5.QtWidgets import QApplication, QWidget
@@ -9,16 +10,17 @@ from tf_pose.networks import get_graph_path, model_wh
 from newGui.MainWindow1 import Ui_MainWindow
 import argparse
 import logging
-import os
 import cv2
 import sys
 import math
 import time
 
-global height, width, out
+
 start_time = time.time()
 x = 1
 counter = 0
+blueMinimum = (85, 58, 106)
+blueMaximum = (102, 181, 207)
 
 logger = logging.getLogger('eTrener')
 logger.setLevel(logging.DEBUG)
@@ -40,18 +42,18 @@ w, h = model_wh(args.resize)
 e = TfPoseEstimator(get_graph_path(args.model), target_size=(w, h))
 
 
-def findPoint(pose, point):
-    for points in pose:
+def findPoint(pose, p):
+    for point in pose:
         try:
-            bodyPart = points.body_parts[point]
-            return int(bodyPart.x * width + 0.5), int(bodyPart.y * height + 0.5)
+            bodyPart = point.body_parts[p]
+            return int(bodyPart.x * width), int(bodyPart.y * height)
         except:
-            return 0, 0
-    return 0, 0
+            return (0, 0)
+    return (0, 0)
 
 
 '''
-Odleglosc euklidesowa - sluzy do obliczenia odleglosci pomiedzy dwoma punktami w przestrzeni trojwymiarowej.
+Odleglosc euklidesowa - sluzy do obliczenia odleglosci pomiedzy dwoma punktami w przestrzeni dwuwymiarowej.
 Miara ta jest odległością wyrażoną w linii prostej między skupieniami. Dedykowana jest tylko dla zmiennych ilościowych.
 '''
 
@@ -165,7 +167,7 @@ def squats(kneeAngleR, kneeAngleL, neckAngleR, neckAngleL):
 
 
 def squatsDone(kneeAngleR, kneeAngleL):
-    if kneeAngleR in range(70, 120) or kneeAngleR in range(70, 120):
+    if kneeAngleR in range(70, 120) or kneeAngleL in range(70, 120):
         return True
     return False
 
@@ -184,6 +186,7 @@ class Lunges(QThread):
 
     def run(self):
         global counter, start_time
+        global height, width
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.cap.set(3, 480)
         self.cap.set(4, 640)
@@ -196,9 +199,8 @@ class Lunges(QThread):
                 humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
                 pose = humans
                 image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
-                image = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
-                height1, width1, channel1 = image.shape
-                step1 = channel1 * width1
+                height, width = image1.shape[0], image1.shape[1]
+
                 if len(pose) > 0:
                     # katy
                     angleKneeR = cosAngle(findPoint(pose, 10), findPoint(pose, 9), findPoint(pose, 8))
@@ -210,7 +212,7 @@ class Lunges(QThread):
                     wrist_hipL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 11)))
                     wrist_noseR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 0)))
                     wrist_noseL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 0)))
-
+                    print(str(angleNeckR))
                     if angleKneeR < 70:
                         cv2.putText(image1, "Zachowaj kat prosty w kolanie!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
@@ -237,7 +239,7 @@ class Lunges(QThread):
                     counter = 0
                     start_time = time.time()
 
-                qImg1 = QImage(image1.data, width1, height1, step1, QImage.Format_BGR888)
+                qImg1 = QImage(image1.data, width, height, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg1)
                 self.out.write(image1)
 
@@ -253,6 +255,7 @@ class PushUps(QThread):
         super().__init__()
 
     def run(self):
+        global height, width
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.cap.set(3, 480)
         self.cap.set(4, 640)
@@ -264,10 +267,10 @@ class PushUps(QThread):
             if ret1:
                 humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
                 pose = humans
-                image1 = TfPoseEstimator.draw_humans(image1, pose, imgcopy=False)
-                image = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
-                height1, width1, channel1 = image.shape
-                step1 = channel1 * width1
+                image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
+                height, width = image1.shape[0], image1.shape[1]
+                cv2.putText(image1, "Brak uzytkownika na obrazie!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                            color=(0, 0, 255))
                 if len(pose) > 0:
                     # katy
                     angleAnkleR = cosAngle(findPoint(pose, 4), findPoint(pose, 3), findPoint(pose, 2))
@@ -278,7 +281,7 @@ class PushUps(QThread):
                     angleHipL = cosAngle(findPoint(pose, 1), findPoint(pose, 11), findPoint(pose, 12))
                     angleNeckR = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
                     angleNeckL = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
-
+                    print(str(angleNeckR))
                     if angleKneeR < 135:
                         cv2.putText(image1, "Nie zginaj kolan!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
@@ -297,7 +300,7 @@ class PushUps(QThread):
                                 image1 = TfPoseEstimator.draw_humans4(image1, pose, imgcopy=False)
                                 cv2.putText(image1, "Powrot do gory!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
                                             color=(255, 255, 255))
-                qImg2 = QImage(image1.data, width1, height1, step1, QImage.Format_BGR888)
+                qImg2 = QImage(image1.data, width, height, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg2)
                 self.out.write(image1)
 
@@ -313,6 +316,7 @@ class Plank(QThread):
         super().__init__()
 
     def run(self):
+        global height, width
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.cap.set(3, 480)
         self.cap.set(4, 640)
@@ -324,10 +328,10 @@ class Plank(QThread):
             if ret1:
                 humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
                 pose = humans
-                image1 = TfPoseEstimator.draw_humans(image1, pose, imgcopy=False)
-                image = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
-                height1, width1, channel1 = image.shape
-                step1 = channel1 * width1
+                image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
+                height, width = image1.shape[0], image1.shape[1]
+                cv2.putText(image1, "Brak uzytkownika na obrazie!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                            color=(0, 0, 255))
                 if len(pose) > 0:
                     # distance calculations
                     foot_distance = int(euclidianDistance(findPoint(pose, 10), findPoint(pose, 13)))
@@ -362,7 +366,7 @@ class Plank(QThread):
                             cv2.putText(image1, "Tak trzymaj!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 1,
                                         color=(255, 255, 255))
 
-                qImg3 = QImage(image1.data, width1, height1, step1, QImage.Format_BGR888)
+                qImg3 = QImage(image1.data, width, height, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg3)
                 self.out.write(image1)
 
@@ -374,10 +378,11 @@ class Plank(QThread):
 class Squats(QThread):
     changePixmap = pyqtSignal(QImage)
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__()
 
     def run(self):
+        global height, width
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.cap.set(3, 480)
         self.cap.set(4, 640)
@@ -389,10 +394,10 @@ class Squats(QThread):
             if ret1:
                 humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
                 pose = humans
-                image1 = TfPoseEstimator.draw_humans(image1, pose, imgcopy=False)
-                image = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
-                height1, width1, channel1 = image.shape
-                step1 = channel1 * width1
+                image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
+                height, width = image1.shape[0], image1.shape[1]
+                cv2.putText(image1, "Brak uzytkownika na obrazie!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                            color=(0, 0, 255))
                 if len(pose) > 0:
                     # dystans
                     foot_distance = int(euclidianDistance(findPoint(pose, 10), findPoint(pose, 13)))
@@ -403,21 +408,22 @@ class Squats(QThread):
                     angleKneeL = cosAngle(findPoint(pose, 8), findPoint(pose, 9), findPoint(pose, 10))
                     angleNeckR = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
                     angleNeckL = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
+                    print(str(shoulders_distance))
 
                     if angleNeckR < 120:
-                        cv2.putText(image1, "Glowa przed siebie!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                        cv2.putText(image1, "Patrz przed siebie!", (20, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
                     if shoulders_distance <= 0.55 * foot_distance:
-                        cv2.putText(image, "Stopy za szeroko!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                        cv2.putText(image1, "Stopy za szeroko!", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
                     if shoulders_distance >= 1.3 * foot_distance:
-                        cv2.putText(image, "Rozszerz stopy!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                        cv2.putText(image1, "Rozszerz stopy!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
                     if knee_distance <= 0.7 * foot_distance:
-                        cv2.putText(image, "Kolana zbyt wasko!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                        cv2.putText(image1, "Kolana zbyt wasko!", (20, 90), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
                     if knee_distance >= 1.35 * foot_distance:
-                        cv2.putText(image, "Kolana za szeroko!", (20, 100), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
+                        cv2.putText(image1, "Kolana za szeroko!", (20, 100), cv2.FONT_HERSHEY_TRIPLEX, 0.75,
                                     color=(0, 0, 255))
 
                     if squats(angleKneeR, angleKneeL, angleNeckR, angleNeckL) and (
@@ -426,15 +432,63 @@ class Squats(QThread):
                             and (shoulders_distance >= 0.55 * foot_distance) and (
                             shoulders_distance <= 1.3 * foot_distance):
 
-                        image1 = TfPoseEstimator.draw_humans2(image1, humans, imgcopy=False)
+                        image1 = TfPoseEstimator.draw_humans2(image1, pose, imgcopy=False)
                         if squatsDone(angleKneeR, angleKneeL):
-                            image1 = TfPoseEstimator.draw_humans3(image1, humans, imgcopy=False)
+                            image1 = TfPoseEstimator.draw_humans3(image1, pose, imgcopy=False)
                             if squatDoneScore(angleKneeR, angleKneeL):
-                                image1 = TfPoseEstimator.draw_humans4(image1, humans, imgcopy=False)
+                                image1 = TfPoseEstimator.draw_humans4(image1, pose, imgcopy=False)
                                 cv2.putText(image1, "Powrot do gory!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
                                             color=(255, 255, 255))
-                qImg4 = QImage(image1.data, width1, height1, step1, QImage.Format_BGR888)
+                qImg4 = QImage(image1.data, width, height, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg4)
+                self.out.write(image1)
+
+    def stop(self):
+        self.out.release()
+        self.cap.release()
+
+
+class BallReaction(QThread):
+    changePixmap = pyqtSignal(QImage)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+    def run(self):
+        global height, width
+        global start_time
+        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.cap.set(3, 480)
+        self.cap.set(4, 640)
+        self.cap.set(5, 7)
+        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.out = cv2.VideoWriter('Wideo/Squats.avi', self.fourcc, 7, (640, 480))
+        while True:
+            ret1, image1 = self.cap.read()
+            if ret1:
+                humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
+                pose = humans
+                image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
+                height, width = image1.shape[0], image1.shape[1]
+                hsv = cv2.cvtColor(image1, cv2.COLOR_BGR2HSV)
+                mask = cv2.inRange(hsv, blueMinimum, blueMaximum)
+                mask = cv2.erode(mask, None, iterations=2)
+                mask = cv2.dilate(mask, None, iterations=2)
+                ball = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+                center = None
+                if len(ball) > 0:
+                    c = max(ball, key=cv2.contourArea)
+                    ((x, y), radius) = cv2.minEnclosingCircle(c)
+                    wrist_ball = int(euclidianDistance(findPoint(pose, 4), (x, y)))
+                    print(str(wrist_ball))
+                    if radius > 10:
+                        cv2.circle(image1, (int(x), int(y)), int(radius), (0, 255, 255), 2)
+                        if wrist_ball < 50:
+                            print("--- Czas dotkniecia pilki =  %s ---" % (time.time() - start_time))
+                            start_time = time.time()
+
+                qImg5 = QImage(image1.data, width, height, QImage.Format_BGR888)
+                self.changePixmap.emit(qImg5)
                 self.out.write(image1)
 
     def stop(self):
@@ -464,6 +518,8 @@ class MainWindow(QWidget):
         self.ui.pushButton15.clicked.connect(self.showPage)
         self.ui.pushButton17.clicked.connect(self.showPage7)
         self.ui.pushButton18.clicked.connect(self.showPage)
+        self.ui.pushButton_13.clicked.connect(self.showPage_6)
+        self.ui.pushButton20_7.clicked.connect(self.showPage)
         self.ui.pushButton20_2.clicked.connect(self.openFile)
         self.ui.pushButton19.clicked.connect(self.startVideo)
         self.ui.pushButton.clicked.connect(self.exit)
@@ -476,10 +532,11 @@ class MainWindow(QWidget):
         self.saveTimer3 = QTimer()
         self.ui.pushButton16.clicked.connect(self.controlTimer4)
         self.saveTimer4 = QTimer()
+        self.ui.pushButton19_4.clicked.connect(self.controlTimer5)
+        self.saveTimer5 = QTimer()
 
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         self.mediaPlayer.setVideoOutput(self.ui.video_label)
-        print("--- %s seconds ---" % (time.time() - start_time))
 
     def openFile(self):
         filename, _ = QFileDialog.getOpenFileName(self, directory="Wideo/")
@@ -519,6 +576,9 @@ class MainWindow(QWidget):
     def showPage6(self):
         self.ui.stackedWidget.setCurrentWidget(self.ui.page6)
 
+    def showPage_6(self):
+        self.ui.stackedWidget.setCurrentWidget(self.ui.page_6)
+
     def showPage7(self):
         self.ui.stackedWidget.setCurrentWidget(self.ui.page7)
 
@@ -537,6 +597,10 @@ class MainWindow(QWidget):
     @QtCore.pyqtSlot(QImage)
     def setImage4(self, qImg4):
         self.ui.image_label_7.setPixmap(QPixmap.fromImage(qImg4))
+
+    @QtCore.pyqtSlot(QImage)
+    def setImage5(self, qImg5):
+        self.ui.image_label_11.setPixmap(QPixmap.fromImage(qImg5))
 
     def controlTimer(self):
         if not self.saveTimer.isActive():
@@ -584,7 +648,7 @@ class MainWindow(QWidget):
     def controlTimer4(self):
         if not self.saveTimer4.isActive():
             self.saveTimer4.start()
-            self.th4 = Squats()
+            self.th4 = Squats(self)
             self.th4.changePixmap.connect(self.setImage4)
             self.th4.start()
             self.ui.pushButton16.setText("Zakończ\nnagrywanie")
@@ -594,6 +658,20 @@ class MainWindow(QWidget):
             self.saveTimer4.stop()
             self.th4.stop()
             self.ui.pushButton16.setText("Rozpocznij\nnagrywanie")
+
+    def controlTimer5(self):
+        if not self.saveTimer5.isActive():
+            self.saveTimer5.start()
+            self.th5 = BallReaction(self)
+            self.th5.changePixmap.connect(self.setImage5)
+            self.th5.start()
+            self.ui.pushButton19_4.setText("Start")
+        else:
+            self.ui.image_label_11.clear()
+            self.th5.changePixmap.disconnect(self.setImage5)
+            self.saveTimer5.stop()
+            self.th5.stop()
+            self.ui.pushButton19_4.setText("Stop")
 
 
 if __name__ == '__main__':
