@@ -1,3 +1,5 @@
+from threading import Timer
+
 import imutils
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
@@ -14,13 +16,15 @@ import cv2
 import sys
 import math
 import time
-
+import winsound
+import random
+from datetime import timedelta
 
 start_time = time.time()
 x = 1
 counter = 0
-blueMinimum = (85, 58, 106)
-blueMaximum = (102, 181, 207)
+blueMinimum = (86, 102, 88)
+blueMaximum = (102, 255, 253)
 
 logger = logging.getLogger('eTrener')
 logger.setLevel(logging.DEBUG)
@@ -232,12 +236,6 @@ class Lunges(QThread):
                                 image1 = TfPoseEstimator.draw_humans4(image1, humans, imgcopy=False)
                                 cv2.putText(image1, "Powrot do gory!", (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
                                             color=(255, 255, 255))
-
-                counter += 1
-                if (time.time() - start_time) > x:
-                    print("FPS: ", counter / (time.time() - start_time))
-                    counter = 0
-                    start_time = time.time()
 
                 qImg1 = QImage(image1.data, width, height, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg1)
@@ -455,14 +453,21 @@ class BallReaction(QThread):
         super().__init__()
 
     def run(self):
-        global height, width
-        global start_time
+        global height, width, start_time
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.cap.set(3, 480)
         self.cap.set(4, 640)
         self.cap.set(5, 7)
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
         self.out = cv2.VideoWriter('Wideo/Squats.avi', self.fourcc, 7, (640, 480))
+        startTime = random.randint(5, 13)
+        time.sleep(startTime)
+        print(str(startTime))
+        duration = 800  # milliseconds
+        freq = 540  # Hz
+        winsound.Beep(freq, duration)
+        start_time = time.time()
+
         while True:
             ret1, image1 = self.cap.read()
             if ret1:
@@ -470,22 +475,29 @@ class BallReaction(QThread):
                 pose = humans
                 image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
                 height, width = image1.shape[0], image1.shape[1]
+
                 hsv = cv2.cvtColor(image1, cv2.COLOR_BGR2HSV)
                 mask = cv2.inRange(hsv, blueMinimum, blueMaximum)
                 mask = cv2.erode(mask, None, iterations=2)
                 mask = cv2.dilate(mask, None, iterations=2)
                 ball = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+
                 center = None
                 if len(ball) > 0:
                     c = max(ball, key=cv2.contourArea)
                     ((x, y), radius) = cv2.minEnclosingCircle(c)
                     wrist_ball = int(euclidianDistance(findPoint(pose, 4), (x, y)))
                     print(str(wrist_ball))
+                    timer = (time.time() - start_time)
+                    hours, rem = divmod(timer, 3600)
+                    minutes, seconds = divmod(rem, 60)
                     if radius > 10:
                         cv2.circle(image1, (int(x), int(y)), int(radius), (0, 255, 255), 2)
                         if wrist_ball < 50:
-                            print("--- Czas dotkniecia pilki =  %s ---" % (time.time() - start_time))
-                            start_time = time.time()
+                            winsound.Beep(freq+100, duration)
+                            break
+                        cv2.putText(image1, "Czas: {:0>2}:{:05.2f}".format(int(minutes),seconds), (20, 80), cv2.FONT_HERSHEY_TRIPLEX, 1,
+                                    color=(255, 255, 255))
 
                 qImg5 = QImage(image1.data, width, height, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg5)
@@ -661,17 +673,19 @@ class MainWindow(QWidget):
 
     def controlTimer5(self):
         if not self.saveTimer5.isActive():
+            global start_time
             self.saveTimer5.start()
             self.th5 = BallReaction(self)
             self.th5.changePixmap.connect(self.setImage5)
             self.th5.start()
-            self.ui.pushButton19_4.setText("Start")
+            self.ui.pushButton19_4.setText("Jeszcze\nraz!")
+
         else:
             self.ui.image_label_11.clear()
             self.th5.changePixmap.disconnect(self.setImage5)
             self.saveTimer5.stop()
             self.th5.stop()
-            self.ui.pushButton19_4.setText("Stop")
+            self.ui.pushButton19_4.setText("Start")
 
 
 if __name__ == '__main__':
