@@ -10,15 +10,14 @@ from PyQt5 import QtCore
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import get_graph_path, model_wh
 from newGui.MainWindow1 import Ui_MainWindow
-import argparse
-import logging
+
 import cv2
 import sys
 import math
 import time
 import winsound
 import random
-from datetime import timedelta
+
 
 start_time = time.time()
 x = 1
@@ -26,24 +25,9 @@ counter = 0
 blueMinimum = (19, 42, 69)
 blueMaximum = (46, 111, 255)
 
-logger = logging.getLogger('eTrener')
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-parser = argparse.ArgumentParser(description='eTrener')
-parser.add_argument('--camera', type=str, default=0)
-parser.add_argument('--resize', type=str, default='400x368')
-parser.add_argument('--resize-out-ratio', type=float, default=4.0)
-parser.add_argument('--model', type=str, default='cmu')
-parser.add_argument('--show-process', type=bool, default=False)
-args = parser.parse_args()
-logger.debug('Inicializacja %s : %s' % (args.model, get_graph_path(args.model)))
 
-w, h = model_wh(args.resize)
-e = TfPoseEstimator(get_graph_path(args.model), target_size=(w, h))
+w, h = model_wh('400x368')
+estimator = TfPoseEstimator(get_graph_path('cmu'), target_size=(w, h))
 
 
 def findPoint(pose, p):
@@ -200,7 +184,7 @@ class Lunges(QThread):
         while True:
             ret1, image1 = self.cap.read()
             if ret1:
-                humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
+                humans = estimator.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
                 pose = humans
                 image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
                 height, width = image1.shape[0], image1.shape[1]
@@ -266,7 +250,7 @@ class PushUps(QThread):
         while True:
             ret1, image1 = self.cap.read()
             if ret1:
-                humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
+                humans = estimator.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
                 pose = humans
                 image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
                 height, width = image1.shape[0], image1.shape[1]
@@ -330,7 +314,7 @@ class Plank(QThread):
         while True:
             ret1, image1 = self.cap.read()
             if ret1:
-                humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
+                humans = estimator.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
                 pose = humans
                 image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
                 height, width = image1.shape[0], image1.shape[1]
@@ -398,7 +382,7 @@ class Squats(QThread):
         while True:
             ret1, image1 = self.cap.read()
             if ret1:
-                humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
+                humans = estimator.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
                 pose = humans
                 image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
                 height, width = image1.shape[0], image1.shape[1]
@@ -479,7 +463,7 @@ class BallReaction(QThread):
         while True:
             ret1, image1 = self.cap.read()
             if ret1:
-                humans = e.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
+                humans = estimator.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
                 pose = humans
                 image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
                 height, width = image1.shape[0], image1.shape[1]
