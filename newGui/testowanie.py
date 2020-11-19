@@ -22,18 +22,18 @@ import random
 start_time = time.time()
 x = 1
 counter = 0
-blueMinimum = (19, 42, 69)
-blueMaximum = (46, 111, 255)
+blueMinimum = (78, 59, 50)
+blueMaximum = (102, 248, 199)
 
 
 w, h = model_wh('400x368')
 estimator = TfPoseEstimator(get_graph_path('cmu'), target_size=(w, h))
 
 
-def findPoint(pose, p):
-    for point in pose:
+def findPoint(pose, points):
+    for value in pose:
         try:
-            bodyPart = point.body_parts[p]
+            bodyPart = value.body_parts[points]
             return int(bodyPart.x * width), int(bodyPart.y * height)
         except:
             return (0, 0)
@@ -182,51 +182,50 @@ class Lunges(QThread):
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
         self.out = cv2.VideoWriter('Wideo/Wykroki.avi', self.fourcc, 7, (640, 480))
         while True:
-            ret1, image1 = self.cap.read()
-            if ret1:
-                humans = estimator.inference(image1, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
-                pose = humans
-                image1 = TfPoseEstimator.draw_humans(image1, humans, imgcopy=False)
-                height, width = image1.shape[0], image1.shape[1]
+            ret, frame = self.cap.read()
+            if ret:
+                allPerson = estimator.inference(frame, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
+                frame = TfPoseEstimator.draw_humans(frame, allPerson, imgcopy=False)
+                height, width = frame.shape[0], frame.shape[1]
 
-                if len(pose) > 0:
+                if len(allPerson) > 0:
                     # katy
-                    angleKneeR = cosAngle(findPoint(pose, 10), findPoint(pose, 9), findPoint(pose, 8))
-                    angleKneeL = cosAngle(findPoint(pose, 13), findPoint(pose, 12), findPoint(pose, 11))
-                    angleNeckR = cosAngle(findPoint(pose, 8), findPoint(pose, 1), findPoint(pose, 0))
-                    angleNeckL = cosAngle(findPoint(pose, 11), findPoint(pose, 1), findPoint(pose, 0))
+                    angleKneeR = cosAngle(findPoint(allPerson, 10), findPoint(allPerson, 9), findPoint(allPerson, 8))
+                    angleKneeL = cosAngle(findPoint(allPerson, 13), findPoint(allPerson, 12), findPoint(allPerson, 11))
+                    angleNeckR = cosAngle(findPoint(allPerson, 8), findPoint(allPerson, 1), findPoint(allPerson, 0))
+                    angleNeckL = cosAngle(findPoint(allPerson, 11), findPoint(allPerson, 1), findPoint(allPerson, 0))
                     # dystans
-                    wrist_hipR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 8)))
-                    wrist_hipL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 11)))
-                    wrist_noseR = int(euclidianDistance(findPoint(pose, 4), findPoint(pose, 0)))
-                    wrist_noseL = int(euclidianDistance(findPoint(pose, 7), findPoint(pose, 0)))
+                    wrist_hipR = int(euclidianDistance(findPoint(allPerson, 4), findPoint(allPerson, 8)))
+                    wrist_hipL = int(euclidianDistance(findPoint(allPerson, 7), findPoint(allPerson, 11)))
+                    wrist_noseR = int(euclidianDistance(findPoint(allPerson, 4), findPoint(allPerson, 0)))
+                    wrist_noseL = int(euclidianDistance(findPoint(allPerson, 7), findPoint(allPerson, 0)))
                     print(str(angleNeckR))
                     if angleKneeR < 80:
-                        cv2.putText(image1, "Zachowaj kat prosty w kolanie!", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                        cv2.putText(frame, "Zachowaj kat prosty w kolanie!", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                     if angleNeckR < 110 or angleNeckL > 150:
-                        cv2.putText(image1, "Patrz przed siebie!", (20, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                        cv2.putText(frame, "Patrz przed siebie!", (20, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                     if wrist_hipR > wrist_noseR:
-                        cv2.putText(image1, "Trzymaj ręce przy ciele!", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                        cv2.putText(frame, "Trzymaj ręce przy ciele!", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
 
                     if lungesStart(angleKneeR, angleKneeL, angleNeckR, angleNeckL) and (
                             wrist_hipL < wrist_noseL or wrist_hipR < wrist_noseR):
-                        image1 = TfPoseEstimator.draw_humans2(image1, humans, imgcopy=False)
+                        frame = TfPoseEstimator.draw_humans2(frame, allPerson, imgcopy=False)
                         if lungesDone(angleKneeR, angleKneeL):
-                            image1 = TfPoseEstimator.draw_humans3(image1, humans, imgcopy=False)
+                            frame = TfPoseEstimator.draw_humans3(frame, allPerson, imgcopy=False)
                             if lungesDoneScore(angleKneeR, angleKneeL):
-                                image1 = TfPoseEstimator.draw_humans4(image1, humans, imgcopy=False)
-                                cv2.putText(image1, "Powrot do gory!", (20, 105), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                frame = TfPoseEstimator.draw_humans4(frame, allPerson, imgcopy=False)
+                                cv2.putText(frame, "Powrot do gory!", (20, 105), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                             color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                 else:
-                    cv2.putText(image1, "Brak uzytkownika na obrazie!", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                    cv2.putText(frame, "Brak uzytkownika na obrazie!", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                 color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
 
-                qImg1 = QImage(image1.data, width, height, QImage.Format_BGR888)
+                qImg1 = QImage(frame.data, width, height, QImage.Format_BGR888)
                 self.changePixmap.emit(qImg1)
-                self.out.write(image1)
+                self.out.write(frame)
 
     def stop(self):
         self.out.release()
@@ -241,7 +240,7 @@ class PushUps(QThread):
 
     def run(self):
         global height, width
-        self.cap = cv2.VideoCapture('pushK2.mp4')
+        self.cap = cv2.VideoCapture('wrong.mp4')
         self.cap.set(3, 480)
         self.cap.set(4, 640)
         self.cap.set(5, 7)
