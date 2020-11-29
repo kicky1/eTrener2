@@ -34,6 +34,10 @@
   <property name="windowTitle">
    <string>eTrener</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../../../Downloads/weightlifting.svg</normaloff>../../../Downloads/weightlifting.svg</iconset>
+  </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
@@ -57,7 +61,7 @@
      <string notr="true">background-color: rgb(252, 252, 252);</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QLabel" name="label">
@@ -82,14 +86,14 @@ text-shadow: 0px 2px 3px black;
 </string>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:27pt;&quot;&gt;eTrener&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:48pt;&quot;&gt;e-Trener&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton">
       <property name="geometry">
        <rect>
         <x>230</x>
-        <y>470</y>
+        <y>570</y>
         <width>321</width>
         <height>181</height>
        </rect>
@@ -138,7 +142,7 @@ padding:10px;
       <property name="geometry">
        <rect>
         <x>230</x>
-        <y>210</y>
+        <y>170</y>
         <width>321</width>
         <height>181</height>
        </rect>
@@ -181,16 +185,66 @@ padding:10px;
 </string>
       </property>
       <property name="text">
-       <string>Trening</string>
+       <string>Trening dokładności</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_13">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>370</y>
+        <width>321</width>
+        <height>181</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
+background-color:rgb(255, 144, 146);
+background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(180, 17, 17), stop:1 rgba(255, 144, 146));
+color:white;
+border-style: outset;
+border-width:1px;
+border-radius:14px;
+border-color:rgb(255, 202, 203);
+font:bold 24px;
+padding:10px;
+}
+QPushButton:hover {   
+background-color:rgb(255, 144, 146);
+background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(255, 144, 146), stop:1 rgba(180, 17, 17));
+color:white;
+border-style: outset;
+border-width:1px;
+border-radius:14px;
+border-color:rgb(255, 202, 203);
+font:bold 26px;
+padding:10px;
+}
+
+QPushButton:pressed {   
+background-color:rgb(255, 144, 146);
+color:white;
+border-style: outset;
+border-width:2px;
+border-radius:14px;
+border-color:rgb(180, 17, 17);
+font:bold 26px;
+padding:10px;
+}
+
+</string>
+      </property>
+      <property name="text">
+       <string>Pomiar refleksu</string>
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="page_2">
-     <widget class="QLabel" name="label_2">
+    <widget class="QWidget" name="page_6">
+     <widget class="QLabel" name="label_13">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>40</y>
+        <x>-10</x>
+        <y>30</y>
         <width>771</width>
         <height>61</height>
        </rect>
@@ -202,9 +256,147 @@ color: #222;
 text-shadow: 0px 2px 3px black;</string>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:27pt;&quot;&gt;Wykroki&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:27pt;&quot;&gt;Sprawdź swój refleks&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
+     <widget class="QLabel" name="image_label_11">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>110</y>
+        <width>661</width>
+        <height>511</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+background-color: black;
+color:white;
+border-style: outset;
+border-width:1px;
+border-radius:14px;
+border-color:gray;
+font:bold 50px;
+padding:10px;
+text-align:center
+</string>
+      </property>
+      <property name="lineWidth">
+       <number>3</number>
+      </property>
+      <property name="midLineWidth">
+       <number>2</number>
+      </property>
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton19_4">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>650</y>
+        <width>181</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
+background-color:rgb(255, 144, 146);
+background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(180, 17, 17), stop:1 rgba(255, 144, 146));
+color:white;
+border-style: outset;
+border-width:1px;
+border-radius:14px;
+border-color:rgb(255, 202, 203);
+font:bold 16px;
+padding:10px;
+}
+QPushButton:hover {   
+background-color:rgb(255, 144, 146);
+background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(255, 144, 146), stop:1 rgba(180, 17, 17));
+color:white;
+border-style: outset;
+border-width:1px;
+border-radius:14px;
+border-color:rgb(255, 202, 203);
+font:bold 18px;
+padding:10px;
+}
+
+QPushButton:pressed {   
+background-color:rgb(255, 144, 146);
+color:white;
+border-style: outset;
+border-width:2px;
+border-radius:14px;
+border-color:rgb(180, 17, 17);
+font:bold 16px;
+padding:10px;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton20_7">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>650</y>
+        <width>181</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
+background-color:rgb(255, 144, 146);
+background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(180, 17, 17), stop:1 rgba(255, 144, 146));
+color:white;
+border-style: outset;
+border-width:1px;
+border-radius:14px;
+border-color:rgb(255, 202, 203);
+font:bold 16px;
+padding:10px;
+}
+QPushButton:hover {   
+background-color:rgb(255, 144, 146);
+background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(255, 144, 146), stop:1 rgba(180, 17, 17));
+color:white;
+border-style: outset;
+border-width:1px;
+border-radius:14px;
+border-color:rgb(255, 202, 203);
+font:bold 18px;
+padding:10px;
+}
+
+QPushButton:pressed {   
+background-color:rgb(255, 144, 146);
+color:white;
+border-style: outset;
+border-width:2px;
+border-radius:14px;
+border-color:rgb(180, 17, 17);
+font:bold 16px;
+padding:10px;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>Powrót</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_2">
      <widget class="QLabel" name="image_label">
       <property name="geometry">
        <rect>
@@ -387,6 +579,39 @@ padding:10px;
  menu</string>
       </property>
      </widget>
+     <widget class="QLabel" name="label6_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>40</y>
+        <width>761</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel{
+
+text-align: center;
+font-size: 36px;
+color: #222;
+text-shadow: 0px 2px 3px black;
+}
+
+
+</string>
+      </property>
+      <property name="text">
+       <string>Wykroki</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="page7">
      <widget class="QLabel" name="label_11">
@@ -503,7 +728,7 @@ padding:10px;
 </string>
       </property>
       <property name="text">
-       <string>Powrót</string>
+       <string>Powrót do menu</string>
       </property>
      </widget>
      <widget class="QLabel" name="image_label_8">
@@ -831,7 +1056,7 @@ text-shadow: 0px 2px 3px black;
 </string>
       </property>
       <property name="text">
-       <string>Plank</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;Plank&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
