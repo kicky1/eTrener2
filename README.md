@@ -1,1 +1,1 @@
-# Projekt Inżynierski - Krysztof Wicki
+# Projekt Inżynierski - Krzysztof Wicki
