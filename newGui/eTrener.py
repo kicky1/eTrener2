@@ -265,7 +265,7 @@ class PushUps(QThread):
                         cv2.putText(frame, "Nie zginaj kolan!", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                     if angleHipR < 145:
-                        cv2.putText(frame, "Tylek nizej!", (20, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                        cv2.putText(frame, "Biodra nizej!", (20, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                     if angleNeckR < 150:
                         cv2.putText(frame, "Patrz przed siebie!", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1,
@@ -335,10 +335,13 @@ class Plank(QThread):
                         cv2.putText(frame, "Nie zginaj kolan!", (20, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                     if angleHipR < 115:
-                        cv2.putText(frame, "Tylek nizej!", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                        cv2.putText(frame, "Biodra nizej!", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                     if angleNeckR < 130:
                         cv2.putText(frame, "Patrz przed siebie!", (20, 105), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                    color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
+                    if foot_distance > ankle_distance:
+                        cv2.putText(frame, "Stopy za szeroko!", (20, 105), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
 
                     if plank(angleAnkleR, angleAnkleL, angleKneeR, angleKneeL, angleHipR, angleHipL, angleNeckR,
@@ -483,7 +486,7 @@ class BallReaction(QThread):
                                     cv2.FONT_HERSHEY_SIMPLEX, 1,
                                     color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
                 else:
-                    cv2.putText(frame, "Nie wykryto piLki", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                    cv2.putText(frame, "Nie wykryto pilki", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                 color=(255, 255, 255), thickness=2, lineType=cv2.LINE_8)
 
                 self.changePixmap.emit(qImg5)
